@@ -1,0 +1,19 @@
+nnue_mvp/
+├─ README.md
+├─ data/
+│  ├─ raw/                # исходные FEN/PGN/CSV
+│  └─ processed/          # npz батчи: {X1_idx, X2_idx, y}
+├─ src/
+│  ├─ python/
+│  │  ├─ dataset.py       # FEN -> sparse indices, batching
+│  │  ├─ model.py         # PyTorch model: accumulator, activation, output
+│  │  ├─ train.py         # минимальный training loop + eval
+│  │  └─ quantize.py      # post-train quantization + exporter
+│  └─ cpp/
+│     ├─ nnue.hpp         # loader + API
+│     ├─ nnue.cpp         # inference implementation (int16 weights)
+│     └─ example.cpp      # пример вызова evaluate(fen)
+├─ tests/
+│  ├─ test_incremental.py # проверка инкрементального обновления
+└─ models/
+   └─ exported.bin        # формат: header + QA/QB + arrays

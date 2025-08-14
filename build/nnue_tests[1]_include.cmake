@@ -1,5 +1,0 @@
-if(EXISTS "/home/serotonin/projects/nnue/build/nnue_tests[1]_tests.cmake")
-  include("/home/serotonin/projects/nnue/build/nnue_tests[1]_tests.cmake")
-else()
-  add_test(nnue_tests_NOT_BUILT nnue_tests_NOT_BUILT)
-endif()

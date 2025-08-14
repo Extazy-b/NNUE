@@ -1,9 +1,0 @@
-CalculateInputTest.StartPosition 0 0
-CalculateInputTest.EmptyBoardBlackMove 0 0
-CalculateInputTest.SingleWhiteQueen 0 0
-CalculateInputTest.AllPieceTypes 0 0
----
-CalculateInputTest.StartPosition
-CalculateInputTest.EmptyBoardBlackMove
-CalculateInputTest.SingleWhiteQueen
-CalculateInputTest.AllPieceTypes

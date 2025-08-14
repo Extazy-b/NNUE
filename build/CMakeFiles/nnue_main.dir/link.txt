@@ -1,1 +1,0 @@
-/usr/bin/c++ -Wl,--dependency-file=CMakeFiles/nnue_main.dir/link.d CMakeFiles/nnue_main.dir/main.cpp.o -o nnue_main  libnnue_core.a

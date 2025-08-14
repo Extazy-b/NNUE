@@ -1,1 +1,0 @@
-/usr/bin/c++ -Wl,--dependency-file=CMakeFiles/nnue_tests.dir/link.d CMakeFiles/nnue_tests.dir/tests/main.cpp.o CMakeFiles/nnue_tests.dir/tests/test_calculate_input.cpp.o -o nnue_tests  libnnue_core.a lib/libgtest_main.a -lpthread lib/libgtest.a

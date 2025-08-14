@@ -1,2 +1,0 @@
-/usr/bin/ar qc libnnue_core.a CMakeFiles/nnue_core.dir/src/core.cpp.o
-/usr/bin/ranlib libnnue_core.a
