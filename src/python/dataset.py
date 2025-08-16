@@ -1,35 +1,28 @@
-from numpy import zeros, int32
+from numpy import zeros, int32, int8, savez
+import torch
+
+from src.python.configs import *
+
 from numpy.typing import  NDArray
+from typing import Generator
 
-alphabet = {
-    'P': (0, 0),
-    'N': (0, 1),
-    'B': (0, 2),
-    'R': (0, 3),
-    'Q': (0, 4),
-    'p': (1, 0),
-    'n': (1, 1),
-    'b': (1, 2),
-    'r': (1, 3),
-    'q': (1, 4),
-    } # Верхний регистр - белы, нижний регист - черные, буква - фигура, значение ключа - код цвета и код фигуры
+def load_raw_fen_file(path: str) -> Generator[tuple[str, int], None, None]:
+    with open(path, 'r') as f:
+        for line in f:
+            fen, score = line.strip().split(',')
+            yield fen, int(score)
 
-NUMBER_OF_SQUARES = 64
-NUMBER_OF_PIECE_TYPE = 5
-NUMBER_OF_COLORS = 2
-KING_BASE = [i * (NUMBER_OF_PIECE_TYPE * NUMBER_OF_COLORS * NUMBER_OF_SQUARES)
-                             for i in range(NUMBER_OF_SQUARES)]
-TYPE_COLOR_BASE = [[type * (NUMBER_OF_COLORS * NUMBER_OF_SQUARES) +
-                                            color * NUMBER_OF_SQUARES 
-                                            for color in range(NUMBER_OF_COLORS)] 
-                                        for type in range(NUMBER_OF_PIECE_TYPE)]
-
-def cross_index_of_three(king_square: int, piece_color: int, piece_type: int, piece_square: int) -> int:
+def cross_index_of_three(
+        king_square: int, 
+        piece_color: int, 
+        piece_type: int, 
+        piece_square: int
+) -> int:
+    
     return KING_BASE[king_square] + TYPE_COLOR_BASE[piece_type][piece_color] + piece_square
 
 def fen_to_indices(fen: str) -> NDArray:
     result = zeros(shape=(2, 32), dtype=int32)
-    a = zeros(10)
     piece_codes = [] # кортеж из (цвет фигуры, тип фигуры, клетка фигуры)
     kings = [-1, -1]
     side = 0
@@ -87,3 +80,94 @@ def fen_to_indices(fen: str) -> NDArray:
         i+= 1
 
     return result
+
+def make_note(
+        indexes: NDArray[int32], 
+        score: int
+) -> tuple[NDArray[int8], NDArray[int8],  int]:
+    
+    #TODO
+    return (zeros(INPUT_VECTOR_SIZE, int8), zeros(INPUT_VECTOR_SIZE, int8), 0)
+
+def write_to_batch(
+        counter: int, 
+        note: tuple[NDArray[int8], NDArray[int8],  int],
+        X1: NDArray[int8],
+        X2: NDArray[int8],
+        Y: NDArray[int32]
+) -> int:
+    #TODO
+    if counter == BATCH_SIZE:
+        return -1
+    return 0
+
+def save_batch_to_npz(
+        X1: NDArray[int8],
+        X2: NDArray[int8],
+        Y: NDArray[int32], 
+        npz_dir: str, 
+        name:str
+) -> int:
+    
+    try:
+        savez(f"{npz_dir}chank_{name}.npz",
+              X1, X2, Y)
+        return 0
+    except:
+        return -1
+    
+# 1. Конвертация CSV → NPZ батчами
+def csv_to_npz(csv_path: str, npz_dir: str, BATCH_SIZE: int = 100_000) -> int:
+    """Читает CSV с FEN и оценками, конвертирует в батчи NPZ.
+
+    csv-filename -> read line -> get fen and score -> get two indexes -> make two vectors -> combine vectors and score ->
+    -> add 2-d vector to nd.array -> save nd.array to file
+    """
+
+    X1_batch = zeros((INPUT_VECTOR_SIZE, BATCH_SIZE), int8)
+    X2_batch = zeros((INPUT_VECTOR_SIZE, BATCH_SIZE), int8)
+    Y_batch = zeros(BATCH_SIZE, int32)
+
+    counter = 0
+    name = 0
+    name_size = len(str(DATASET_SIZE//BATCH_SIZE + 1))
+
+    dataset = load_raw_fen_file(csv_path)
+
+    for fen, score in dataset:
+        indexes = fen_to_indices(fen)
+        note = make_note(indexes, score)
+        
+        if write_to_batch(counter, note, X1_batch, X2_batch, Y_batch) == -1:
+            if save_batch_to_npz(X1_batch, X2_batch, Y_batch, npz_dir,  str(name).zfill(name_size)) != 0:
+                pass #TODO alarm
+        else:
+            counter += 1
+    return 0
+
+
+# 2. Dataset-объект для PyTorch
+class NNUEDataset(torch.utils.data.Dataset):
+    """Dataset, читающий готовые NPZ и выдающий тензоры."""
+    def __init__(self, npz_files: list[str]):
+        # - сохранить список путей к NPZ
+        # - можно загрузить все в память или читать по запросу
+        pass
+    
+    def __len__(self):
+        # - вернуть суммарное количество позиций
+        pass
+    
+    def __getitem__(self, idx):
+        # - найти из какого NPZ брать данные
+        # - вернуть torch.tensor(X1), torch.tensor(X2), torch.tensor(y)
+        pass
+
+
+# 3. Утилита для создания DataLoader
+def make_dataloader(npz_dir: str, BATCH_SIZE: int, shuffle: bool = True):
+    """Сканирует папку с NPZ, возвращает DataLoader."""
+    # - найти все *.npz
+    # - создать NNUEDataset
+    # - обернуть в torch.utils.data.DataLoader
+    pass

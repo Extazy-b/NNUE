@@ -75,8 +75,8 @@ def test_valid_fen_with_pieces():
     # Короли + пешка
     fen = "8/8/8/8/4P3/8/4K3/4k3 w"
     result = fen_to_indices(fen)
-    assert np.all(result >= 0)
-    assert np.any(result > 0)  # есть фигуры
+    assert np.all(*result >= 0)
+    assert np.any(*result > 0)  # есть фигуры #TODO
 
 def test_invalid_too_many_pieces():
     fen = "8/8/8/7P/PPPPPPPP/PPPPPPPP/PPPPPPPP/PPPPPPPP w"
@@ -115,7 +115,11 @@ def test_black_to_move():
     assert np.all(result >= 0)
 
 def test_ignore_slash_and_spaces():
-    
     fen = "8/8/8/8/8/8/4K3/4k3 w"
     result = fen_to_indices(fen)
     assert isinstance(result, np.ndarray)
+
+def test_only_two_kings():
+    fen = "3qk3/8/8/8/8/8/8/3QK3 w"
+    result = fen_to_indices(fen)
+    assert set(result.ravel()) == {0, 38979, 38971, 3139, 3131}
