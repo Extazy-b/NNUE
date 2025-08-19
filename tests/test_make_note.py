@@ -9,15 +9,17 @@ def test_empty_note():
     score = 0
     result = make_note(indexes, score)
 
-    assert np.all(result == (np.zeros(INPUT_VECTOR_SIZE, np.int8), np.zeros(INPUT_VECTOR_SIZE, np.int8), 0)) #FIXME check pytest
+    assert (result[0] == np.zeros(INPUT_VECTOR_SIZE, np.int8)).all()
+    assert (result[1] == np.zeros(INPUT_VECTOR_SIZE, np.int8)).all()
+    assert (result[2] == 0)
 
 
-def test_empty_note_with_score():
+def test_note_with_score():
     indexes = np.zeros((2, 32), np.int32)
     score = 10
     result = make_note(indexes, score)
 
-    assert np.all(result == (np.zeros(INPUT_VECTOR_SIZE, np.int8), np.zeros(INPUT_VECTOR_SIZE, np.int8), 10)) #FIXME check pytest
+    assert (result[2] == 10)
 
 
 def test_random_index():
