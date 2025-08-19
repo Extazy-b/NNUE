@@ -9,7 +9,7 @@ from typing import Generator
 def load_raw_fen_file(path: str) -> Generator[tuple[str, int], None, None]:
     with open(path, 'r') as f:
         for line in f:
-            fen, score = line.strip().split(',')
+            fen, score = line.split(',')
             yield fen, int(score)
 
 def cross_index_of_three(
@@ -22,7 +22,7 @@ def cross_index_of_three(
     return KING_BASE[king_square] + TYPE_COLOR_BASE[piece_type][piece_color] + piece_square
 
 def fen_to_indices(fen: str) -> NDArray:
-    result = zeros(shape=(2, 32), dtype=int32)
+    result = zeros(shape=(2, 32), dtype=int32) # нулевой нейрон ВСЕГДА выключен потому что кодирует белую пешку, стоящую на той же клетке что и атакующий король
     piece_codes = [] # кортеж из (цвет фигуры, тип фигуры, клетка фигуры)
     kings = [-1, -1]
     side = 0
@@ -86,8 +86,16 @@ def make_note(
         score: int
 ) -> tuple[NDArray[int8], NDArray[int8],  int]:
     
-    #TODO
-    return (zeros(INPUT_VECTOR_SIZE, int8), zeros(INPUT_VECTOR_SIZE, int8), 0)
+    X1 = zeros(INPUT_VECTOR_SIZE, int8)
+    X2 = zeros(INPUT_VECTOR_SIZE, int8)
+    
+    for i in range(32):
+        X1[indexes[0][i]] = bool(indexes[0][i])
+        X2[indexes[1][i]] = bool(indexes[1][i])
+
+    #TODO tests for make note 
+
+    return (X1, X2, score)
 
 def write_to_batch(
         counter: int, 
@@ -96,7 +104,13 @@ def write_to_batch(
         X2: NDArray[int8],
         Y: NDArray[int32]
 ) -> int:
-    #TODO
+    
+    X1[counter + 1] = note[0]
+    X2[counter + 1] = note[1]
+    Y[counter + 1] = note[2]
+
+    #TODO tests for batch adder
+
     if counter == BATCH_SIZE:
         return -1
     return 0
@@ -112,6 +126,9 @@ def save_batch_to_npz(
     try:
         savez(f"{npz_dir}chank_{name}.npz",
               X1, X2, Y)
+        
+        #TODO test for npz saver
+
         return 0
     except:
         return -1
@@ -140,7 +157,9 @@ def csv_to_npz(csv_path: str, npz_dir: str, BATCH_SIZE: int = 100_000) -> int:
         
         if write_to_batch(counter, note, X1_batch, X2_batch, Y_batch) == -1:
             if save_batch_to_npz(X1_batch, X2_batch, Y_batch, npz_dir,  str(name).zfill(name_size)) != 0:
-                pass #TODO alarm
+                pass #TODO alarm of saving batch
+            else:
+                name += 1
         else:
             counter += 1
     return 0

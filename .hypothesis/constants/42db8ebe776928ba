@@ -1,0 +1,4 @@
+# file: /home/serotonin/projects/nnue/src/python/configs.py
+# hypothesis_version: 6.138.2
+
+[40960, 100000, 12958036, 'B', 'N', 'P', 'Q', 'R', 'b', 'n', 'p', 'q', 'r']
