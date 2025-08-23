@@ -293,6 +293,7 @@ class NNUEDataset(Dataset):
                         f"but expected {BATCH_SIZE}. Dataset consistency check failed."
                     )
         print(f"[INFO] All {len(self.npz_files)} files passed size validation ({BATCH_SIZE} samples each).")
+    
     def __len__(self) -> int:
         return self.total_size
 
@@ -345,7 +346,7 @@ class NNUEDataset(Dataset):
 
         return x1, x2, y
 
-    def __del__(self):
+    def __del__(self) -> None:
         """Закрываем файл при удалении датасета для избежания утечек."""
         if self.cached_data is not None:
             self.cached_data.close()

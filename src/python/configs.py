@@ -26,7 +26,9 @@ TYPE_COLOR_BASE = [[type * (NUMBER_OF_COLORS * NUMBER_OF_SQUARES) +
                                         for type in range(NUMBER_OF_PIECE_TYPE)] # База кода цвета фигуры для сквозной индексации
 
 DATASET_SIZE = 12_958_036
-
-INPUT_VECTOR_SIZE = 64 # 40_960
-BATCH_SIZE = 100 # 100_000
+BATCH_SIZE = 10 # TODO 100_000 
 MATE_SCORE = 32000
+
+INPUT_VECTOR_SIZE = 4 # TODO 40_960
+HIDDEN_LAYER_SIZE = 4 # TODO 
+CRelu_Border = 127

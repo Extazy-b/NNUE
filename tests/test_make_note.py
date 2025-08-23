@@ -23,7 +23,7 @@ def test_note_with_score():
 
 
 def test_random_index():
-    ind = randint(0, INPUT_VECTOR_SIZE - 1)
+    ind = randint(1, INPUT_VECTOR_SIZE - 1)
 
     indexes = np.zeros((2, 32), np.int32)
     score = 0

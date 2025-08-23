@@ -17,3 +17,4 @@ nnue_mvp/
 │  ├─ test_incremental.py # проверка инкрементального обновления
 └─ models/
    └─ exported.bin        # формат: header + QA/QB + arrays
+

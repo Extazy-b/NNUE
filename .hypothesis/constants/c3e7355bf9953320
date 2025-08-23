@@ -1,0 +1,4 @@
+# file: /home/serotonin/projects/nnue/src/python/model.py
+# hypothesis_version: 6.138.2
+
+[1e-05, 0.001, 0.9, 1.0, 1000, 32767, 'QA', 'QB', 'l1_biases', 'l1_weights', 'l2_bias', 'l2_weight']

@@ -114,18 +114,18 @@ def test_make_dataloader():
         }
         np.savez(os.path.join(tmp_dir, 'chank_000.npz'), **data)
         
-        dataloader = make_dataloader(tmp_dir, batch_size=32, shuffle=True)
+        dataloader = make_dataloader(tmp_dir, batch_size=BATCH_SIZE, shuffle=True)
         
         # Проверяем, что возвращается объект правильного типа
         from torch.utils.data import DataLoader
         assert isinstance(dataloader, DataLoader)
         
         # Проверяем переданные параметры
-        assert dataloader.batch_size == 32
+        assert dataloader.batch_size == BATCH_SIZE
         
         # Проверяем, что можно проитерироваться по даталоадеру
         batch = next(iter(dataloader))
         assert len(batch) == 3  # x1, x2, y
-        assert batch[0].shape == (32, INPUT_VECTOR_SIZE)  # x1 batch
-        assert batch[1].shape == (32, INPUT_VECTOR_SIZE)  # x2 batch
-        assert batch[2].shape == (32,)  # y batch
+        assert batch[0].shape == (BATCH_SIZE, INPUT_VECTOR_SIZE)  # x1 batch
+        assert batch[1].shape == (BATCH_SIZE, INPUT_VECTOR_SIZE)  # x2 batch
+        assert batch[2].shape == (BATCH_SIZE,)  # y batch
