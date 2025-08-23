@@ -1,0 +1,4 @@
+# file: /home/serotonin/projects/nnue/src/python/dataset.py
+# hypothesis_version: 6.138.2
+
+[0.8, 10000, 100000, '#', '+', ',', '-', '.npz', '/', '0', '9', 'K', 'X1', 'X2', 'Y', 'b', 'k', 'r', 'w']

@@ -25,17 +25,17 @@ def test_invalid_too_many_pieces():
 
 def test_invalid_too_few_kings():
     fen = "8/8/8/8/8/8/4K3/8 w"
-    with pytest.raises(ValueError, match="not enought kings"):
+    with pytest.raises(ValueError, match="invalid FEN: missing king\(s\)"): # type: ignore
         fen_to_indices(fen)
 
 def test_invalid_too_few_squares():
     fen = "8/8/8/8/8/8/4K3/4k2 w"  # 63 клетки
-    with pytest.raises(ValueError, match="too many or not enought squares"):
+    with pytest.raises(ValueError, match="invalid FEN: unknown letter -  "):
         fen_to_indices(fen)
 
 def test_invalid_too_many_squares():
     fen = "8/8/8/8/8/8/4K3/4k3P w"  # 65 клеток
-    with pytest.raises(ValueError, match="too many or not enought squares"):
+    with pytest.raises(ValueError, match="invalid FEN: unknown letter - P"):
         fen_to_indices(fen)
 
 def test_invalid_character():

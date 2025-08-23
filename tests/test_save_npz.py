@@ -18,9 +18,10 @@ def test_save_batch_to_npz_success():
         
         # содержимое должно совпадать
         data = np.load(filepath)
-        assert np.array_equal(data["arr_0"], X1)
-        assert np.array_equal(data["arr_1"], X2)
-        assert np.array_equal(data["arr_2"], Y)
+        
+        assert np.array_equal(data["X1"], X1)
+        assert np.array_equal(data["X2"], X2)
+        assert np.array_equal(data["Y"], Y)
 
 def test_save_batch_to_npz_failure():
     X1 = np.array([1], dtype=np.int8)
