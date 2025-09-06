@@ -1,3 +1,4 @@
+import os
 import numpy as np
 from src.python.configs import *
 from src.python.dataset import Dataset
@@ -43,12 +44,12 @@ def grad_destination(F, X0, E1, E2, M, t): # TODO typing
 
 class Trainer():
     def __init__(self, 
-                 error: float = 10**(-6), 
-                 step: float = 1, 
-                 max_times: int = 10**(3), 
-                 npz_dir: str = ".data/processed", 
-                 reboot: bool = False, 
-                 model_path: str = ".model/model.bin") -> None:
+                 error: float, 
+                 step: float,
+                 datasert: Dataset, 
+                 max_times: int,
+                 reboot: bool, 
+                 model_path: str) -> None:
         """
         Trainer class: manages dataset, model initialization, and training.
 
@@ -64,27 +65,40 @@ class Trainer():
         self.error = error
         self.step = step
         self.max_times = max_times
-        self.dataset = Dataset(npz_dir)  # Load dataset from disk
+        self.dataset = datasert # Load dataset from disk
         self.loss = Loss  # Loss function object (not instantiated here yet)
         self.model_path = model_path
+        self.model_weight = np.zeros(1)
 
         if reboot:
             # If reboot flag is set, reinitialize model parameters
             self._reboot()
+        else:
+            # Otherwise, load model parameters from disk
+            self._read_model()
         
     def _reboot(self):
         """
         Reset (reinitialize) all model parameters from scratch
         using He or Xavier initialization where appropriate.
         """
-        self.A1 = self._he_init((HIDDEN_LAYER_SIZE, INPUT_VECTOR_SIZE))  # first layer weights for X1
-        self.A2 = self._he_init((HIDDEN_LAYER_SIZE, INPUT_VECTOR_SIZE))  # first layer weights for X2
-        self.B1 = np.zeros((HIDDEN_LAYER_SIZE, 1))  # bias for A1
-        self.B2 = self._he_init((HIDDEN_LAYER_SIZE, 1))  # bias for A2
-        self.C = self._xavier_init((1, 2 * HIDDEN_LAYER_SIZE))  # second layer weights
-        self.d = np.zeros((1, 1))  # output bias
+        A1 = self._he_init((HIDDEN_LAYER_SIZE, INPUT_VECTOR_SIZE))  # first layer weights for X1
+        A2 = self._he_init((HIDDEN_LAYER_SIZE, INPUT_VECTOR_SIZE))  # first layer weights for X2
+        B1 = np.zeros((HIDDEN_LAYER_SIZE, 1))  # bias for A1
+        B2 = self._he_init((HIDDEN_LAYER_SIZE, 1))  # bias for A2
+        C = self._xavier_init((1, 2 * HIDDEN_LAYER_SIZE))  # second layer weights
+        d = np.zeros((1, 1))  # output bias
         
-        self._write_model(self.model_path, self.model_path) #TODO male one vector
+        self.model_weight = np.concatenate([ A1.ravel(),  A2.ravel(),  B1.ravel(),  B2.ravel(),  C.ravel(),   d.ravel()])
+
+        del A1
+        del A2
+        del B1
+        del B2
+        del C
+        del d
+
+        self._write_model()
 
     def _he_init(self, shape):
         """
@@ -109,24 +123,36 @@ class Trainer():
         1. Load current model parameters
         2. Optimize with gradient descent
         3. Save updated model parameters
-        """
-        X0 = self._read_model(self.model_path)  # load current weights
-        X1 = grad_destination(self.loss, X0, self.error, self.error, self.max_times, self.step)  
-        self._write_model(X1, self.model_path)  # save updated weights
+        """  # load current weights
+        try:
+            self.model_weight = grad_destination(self.loss, self.model_weight, self.error, self.error, self.max_times, self.step) 
+        except Exception as e:
+            print(f"Optimization failed: {e}")
+        self._write_model()  # save updated weights
 
-    def _read_model(self, path_to_bin):
+    def _read_model(self):
         """
         Read model parameters from binary file.
         (Not implemented yet)
         """
-        pass #TODO: implement loading model
+        if not os.path.exists(self.model_path):
+            raise FileNotFoundError(f"Model file {self.model_path} not found.")
+        self.model_weight = np.fromfile(self.model_path, dtype=np.float32)
 
-    def _write_model(self, X, path_to_bin):
+    def _write_model(self):
         """
         Write model parameters to binary file.
         (Not implemented yet)
         """
-        pass #TODO: implement saving model
+        self.model_weight.astype(np.float32).tofile(self.model_path)
+
+    def end(self):
+        """
+        End training session.
+        (Not implemented yet)
+        """
+        #TODO backup saving
+        
 
 
 class Validator:
