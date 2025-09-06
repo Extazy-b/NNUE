@@ -239,19 +239,8 @@ def csv_to_npz(csv_path: str, npz_dir: str, BATCH_SIZE: int = 100_000) -> int:
     return 0
 
 
-# 2. Dataset-объект для PyTorch
-class NNUEDataset(Dataset):
-    """
-    Dataset for loading batches of .npz files and providing data to the model.
-
-    Attributes:
-        npz_dir (str): Path to the directory with .npz files.
-        npz_files (List[str]): List of .npz files in the directory.
-        total_size (int): Total number of samples in the dataset.
-        cached_data (np.ndarray): Cached data for the current file.
-        cached_file_index (int): Index of the cached file.
-    """
-
+# 2. Dataset-объект
+class Dataset():
     def __init__(self, npz_dir: str) -> None:
         """
         Args:
@@ -263,109 +252,22 @@ class NNUEDataset(Dataset):
         if not self.npz_files:
             raise ValueError(f"No .npz files found in directory {npz_dir}")
 
-        # Check that all files have size BATCH_SIZE
-        self._validate_file_sizes()
+        self.total_size = len(self.npz_files)
 
-        self.total_size = BATCH_SIZE * len(self.npz_files)
-
-        # Caching variables
-        self.cached_file_index = 0  # Index of the cached file
-        # Lazy loading: load the first file only when it is first accessed
-        self.cached_data = np.load(os.path.join(self.npz_dir, self.npz_files[self.cached_file_index]))
-
-    def _validate_file_sizes(self) -> None:
-        """
-        Checks that all .npz files have exactly BATCH_SIZE records.
-
-        Args:
-            None
-
-        Returns:
-            None
-        """
-        for filename in self.npz_files:
-            filepath = os.path.join(self.npz_dir, filename)
-            with np.load(filepath) as data:
-                actual_size: int = data['Y'].shape[0]
-                if actual_size != BATCH_SIZE:
-                    raise ValueError(
-                        f"File {filename} has {actual_size} samples, "
-                        f"but expected {BATCH_SIZE}. Dataset consistency check failed."
-                    )
-        print(f"[INFO] All {len(self.npz_files)} files passed size validation ({BATCH_SIZE} samples each).")
-    
     def __len__(self) -> int:
         return self.total_size
 
-    def _load_file(self, file_index: int) -> None:
-        """
-        Loads a file into the cache if it hasn't been loaded yet.
-
-        Args:
-            file_index (int): Index of the file to load.
-
-        Returns:
-            None
-        """
-        if self.cached_file_index != file_index:
-            filepath = os.path.join(self.npz_dir, self.npz_files[file_index])
-            self.cached_data = np.load(filepath)
-            self.cached_file_index = file_index
-
-    def __getitem__(self, idx: int) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-        """
-        Returns a single example from the dataset.
-
-        Args:
-            idx (int): Global index of the example (from 0 to len(dataset)-1).
-
-        Returns:
-            tuple: (x1, x2, y) where:
-                x1 (torch.Tensor): Tensor of features (Shape: (INPUT_VECTOR_SIZE,)),
-                x2 (torch.Tensor): Tensor of features (Shape: (INPUT_VECTOR_SIZE,)),
-                y (torch.Tensor): Tensor of the target score (Shape: (1,))
-        """
+    def __geеindex__(self, idx: int) -> tuple: # TODO typing
+ 
         if idx < 0 or idx >= self.total_size:
             raise IndexError(f"Index {idx} is out of range for dataset with size {self.total_size}")
 
-        # 1. Find the file index that contains the example
-        # idx = file_index * BATCH_SIZE + local_idx
-        # file_index = idx // BATCH_SIZE
-        file_index = idx // BATCH_SIZE
-        
-        # 2. Находим локальный индекс внутри этого файла
-        local_idx = idx % BATCH_SIZE
+        filepath = os.path.join(self.npz_dir, self.npz_files[idx])
+        data = np.load(filepath)
 
-        # 3. Загружаем нужный файл (используется кэш)
-        self._load_file(file_index)
-
-        # 4. Достаем данные и преобразуем в тензоры
-        x1 = torch.from_numpy(self.cached_data['X1'][local_idx].astype(np.float32))
-        x2 = torch.from_numpy(self.cached_data['X2'][local_idx].astype(np.float32))
-        y = torch.tensor(self.cached_data['Y'][local_idx], dtype=torch.float32)
+        x1 = data['X1']
+        x2 = data['X2']
+        y = data['Y']
 
         return x1, x2, y
-
-    def __del__(self) -> None:
-        """Закрываем файл при удалении датасета для избежания утечек."""
-        if self.cached_data is not None:
-            self.cached_data.close()
-
-
-# 3. Утилита для создания DataLoader
-def make_dataloader(npz_dir: str, batch_size: int = BATCH_SIZE, shuffle: bool = True, **kwargs) -> DataLoader:
-    """
-    Создает DataLoader для готовых NPZ-батчей.
-
-    Args:
-        npz_dir: Путь к директории с .npz файлами.
-        batch_size: Размер батча.
-        shuffle: Перемешивать ли данные.
-        **kwargs: Дополнительные аргументы для DataLoader (например, num_workers).
-
-    Returns:
-        DataLoader: Объект DataLoader для итерации по данным.
-    """
-    dataset = NNUEDataset(npz_dir)
-    return DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, **kwargs)
 
