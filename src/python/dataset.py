@@ -2,8 +2,6 @@ import sys, shutil
 import os
 
 import numpy as np
-import torch
-from torch.utils.data import Dataset, DataLoader
 
 from numpy.typing import NDArray
 from typing import Generator, Tuple
